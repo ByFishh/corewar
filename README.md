@@ -12,7 +12,7 @@ make
 ## Usage
 
 ```bash
-./corewar/asm -h
+./asm/asm -h
 ./corewar/corewar -h
 ```
 
