@@ -1,0 +1,63 @@
+/*
+** EPITECH PROJECT, 2021
+** B-CPE-201-NCY-2-1-corewar-antoine.gasser
+** File description:
+** sti
+*/
+
+#include "corewar.h"
+
+static int rec_param(champ_t *champion, data_t *data
+, coding_bytes_t store, int i)
+{
+    int tmp = 0;
+
+    for (int nb = 0; nb < store.nb_bytes_param[i]; nb += 1) {
+        tmp <<= 8;
+        tmp |= data->arena[mod(champion->next_instr, nb)];
+    }
+    champion->next_instr = mod(champion->next_instr, store.nb_bytes_param[i]);
+    return (tmp);
+}
+
+static int param(champ_t *champion, data_t *data, coding_bytes_t store)
+{
+    int tmp1 = 0;
+    int tmp2 = 0;
+
+    champion->next_instr = mod(champion->next_instr, 1);
+    tmp1 = rec_param(champion, data, store, 1);
+    tmp2 = rec_param(champion, data, store, 2);
+    return (tmp1 + tmp2);
+}
+
+static void clc_carry(champ_t *champion, data_t *data, coding_bytes_t store)
+{
+    calcul_carry(champion
+    , champion->reg[data->arena[mod(champion->next_instr
+    , -(store.nb_bytes_param[1] + store.nb_bytes_param[2]))] - 1]);
+    champion->next_instr = mod(champion->next_instr, 1);
+}
+
+void sti_mnemonic(champ_t *champion, data_t *data)
+{
+    int tmp = 0;
+    int init = champion->next_instr;
+    coding_bytes_t store = {0};
+
+    store.index = 1;
+    champion->next_instr = mod(champion->next_instr, 1);
+    uncrypt_bytes(data->arena[champion->next_instr], &store);
+    if (store.nb_param != 3 || store.param_types[0] != 1
+        || (store.param_types[2] != 1 && store.param_types[2] != 2)
+        || store.param_types[1] == 0)
+        return (error_mnemonic(champion, 25));
+    champion->next_instr = mod(champion->next_instr, 1);
+    if (verif_reg(champion, data) == 1)
+        return (error_mnemonic(champion, 25));
+    tmp = param(champion, data, store);
+    data->arena[(init + tmp % IDX_MOD) % MEM_SIZE]
+    = champion->reg[data->arena[champion->next_instr - 4] - 1];
+    clc_carry(champion, data, store);
+    champion->cycle += 25;
+}
