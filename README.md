@@ -7,8 +7,6 @@ Clone the project.
 ```bash
 cd corewar
 make
-./corewar/asm -h
-./corewar/corewar -h
 ```
 
 ## Usage
